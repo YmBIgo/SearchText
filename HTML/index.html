@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Search Text Sample</title>
+</head>
+<body>
+	<div class="search-text-area">
+	なぜこのアプローチが有効的か見てみましょう。以前は、我々の例は二つの検索結果を表示してました（react と redux の検索クエリ）。ですが、任意のクエリを受け取るためインプットを追加するとしましょう。要するに、 query を引数で受け取るのではなく、 getFetchUrl はローカルの state からクエリを受け取ります。
+	<br/>
+	query の依存配列チェックがないことにすぐ気づけます：
+	</div>
+	<div class="search-text-area">
+	useCallback のおかげで、 query が同じであれば getFetchUrl も同じであることが担保されるので、エフェクトは再実行されません。ですが query が変わると getFetchUrl も変わるのでデータを再取得しにいきます。エクセルのスプレッドシートでセルの中を変えると他のセルが自動的に再計算するイメージと似ています。
+	<br/>
+	これらはデータフローとシンクロというマインドセットを掛け持った結果にすぎません。親コンポーネントから関数を渡す場合でも同じ解決方法が使えます：
+	</div>
+<script>
+	const search_text_area = document.getElementsByClassName("search-text-area")
+	for (let i = 0; i < search_text_area.length; i++) {
+		console.log(search_text_area[i])
+		const search_text_body = search_text_area[i].innerText
+		const send_body = {title: "useeffect 完全ガイド", body: search_text_body}
+		console.log(send_body)
+		fetch("http://localhost:3001/api/goo_keyword/", {
+			method: "POST",
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(send_body)
+		})
+		.then((results) => {
+			return results.json()
+		})
+		.then((results) => {
+			const keywords_results = results.keywords
+			keywords_results.forEach((result) => {
+				console.log(result)
+				const search_text_html = search_text_area[i].innerHTML
+				const keyword_regex = new RegExp(result, 'g')
+				const keyword_href = `<a href="https://www.bing.com/?q=${result}">${result}</a>`
+				const fixed_search_text_body = search_text_html.replace(keyword_regex, keyword_href)
+				search_text_area[i].innerHTML = fixed_search_text_body
+			})
+		})
+	}
+</script>
+</body>
+</html>
