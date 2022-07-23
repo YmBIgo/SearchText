@@ -3,6 +3,16 @@
 <head>
 	<meta charset="utf-8">
 	<title>Search Text Sample</title>
+	<style type="text/css">
+		.popup_box {
+			width:  300px;
+			height: 300px;
+			border: 1px solid black;
+			position: absolute;
+			background-color: white;
+			padding: 10px;
+		}
+	</style>
 </head>
 <body>
 	<div class="search-text-area">
@@ -39,10 +49,60 @@
 				console.log(result)
 				const search_text_html = search_text_area[i].innerHTML
 				const keyword_regex = new RegExp(result, 'g')
-				const keyword_href = `<a href="https://www.bing.com/?q=${result}">${result}</a>`
+				const keyword_href = `<a href="https://www.bing.com/?q=${result}" class="hover-href">${result}</a>`
 				const fixed_search_text_body = search_text_html.replace(keyword_regex, keyword_href)
 				search_text_area[i].innerHTML = fixed_search_text_body
 			})
+			const hover_hrefs = document.getElementsByClassName("hover-href")
+			let current_popup = null;
+			for (let i = 0; i < hover_hrefs.length; i++) {
+				const hover_href = hover_hrefs[i]
+				const hover_href_keyword = hover_hrefs[i].innerText
+				console.log(hover_href)
+				hover_href.addEventListener("mouseover", function(e) {
+					if (current_popup != null) {
+					} else {
+						const rect = e.currentTarget.getBoundingClientRect()
+						const top = rect.top + 20
+						const left = rect.left + 10
+						console.log(top, left)
+						current_popup = document.createElement("div")
+						// current_popup.innerText = hover_href_keyword
+						current_popup.style.top = top + "px"
+						current_popup.style.left = left + "px"
+						current_popup.classList.add("popup_box")
+						hover_href.append(current_popup)
+						fetch(`https://ja.wikipedia.org/w/api.php?format=json&action=query&origin=*&list=search&srlimit=10&srsearch=${hover_href_keyword}`, {
+							method: "GET"
+						})
+						.then((result) => {
+							return result.json()
+						})
+						.then((result) => {
+							const search_result = result.query.search[0]
+							if (!search_result) {
+								let search_result_html = `<h3>結果が見つかりませんでした</h3><p>`
+								current_popup.innerHTML = search_result_html
+								return
+							}
+							if ((search_result.title).indexOf(hover_href_keyword) > -1) {
+								const search_result_html = `<h3>${search_result.title}</h3><p>${search_result.snippet}...</p>`
+								current_popup.innerHTML = search_result_html
+							} else {
+								let search_result_html = `<h3>結果が見つかりませんでした</h3><p>`
+								result.query.search.forEach((search_result) => {
+									search_result_html += `<a href="https://ja.wikipedia.org/wiki/${search_result.title}" target="_blank">${search_result.title}</a><br/>`
+								})
+								current_popup.innerHTML = search_result_html
+							}
+						})
+					}
+				})
+				hover_href.addEventListener("mouseout", function(e) {
+					current_popup = null
+					hover_href.innerHTML = hover_href_keyword
+				})
+			}
 		})
 	}
 </script>
