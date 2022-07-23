@@ -11,6 +11,9 @@
 			position: absolute;
 			background-color: white;
 			padding: 10px;
+			pointer-events: none !important;
+			cursor: default;
+			color: black;
 		}
 	</style>
 </head>
@@ -55,9 +58,9 @@
 			})
 			const hover_hrefs = document.getElementsByClassName("hover-href")
 			let current_popup = null;
-			for (let i = 0; i < hover_hrefs.length; i++) {
-				const hover_href = hover_hrefs[i]
-				const hover_href_keyword = hover_hrefs[i].innerText
+			for (let j = 0; j < hover_hrefs.length; j++) {
+				const hover_href = hover_hrefs[j]
+				const hover_href_keyword = hover_hrefs[j].innerText
 				console.log(hover_href)
 				hover_href.addEventListener("mouseover", function(e) {
 					if (current_popup != null) {
@@ -71,6 +74,7 @@
 						current_popup.style.top = top + "px"
 						current_popup.style.left = left + "px"
 						current_popup.classList.add("popup_box")
+						// search_text_area[i].insertBefore(current_popup, hover_href.nextSibling)
 						hover_href.append(current_popup)
 						fetch(`https://ja.wikipedia.org/w/api.php?format=json&action=query&origin=*&list=search&srlimit=10&srsearch=${hover_href_keyword}`, {
 							method: "GET"
